@@ -27,14 +27,17 @@ class ROperator(BaseOperator):
     super(ROperator, self).__init__(**kwargs)
 
   def execute(self, context):
+    self.log.info('Executing RScript %s %s', self.script, self.arguments)
+
     r_proc = subprocess.Popen(
-      ['/usr/bin/Rscript', self.script] + new_args,
-      stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True,
-      cwd = self.cwd)
+        ['/usr/bin/Rscript', self.script] + self.arguments,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True,
+        cwd=self.cwd)
     (r_stdoutdata, _) = r_proc.communicate()
     self.log.info("Rscript output %s", escape_string(r_stdoutdata))
 
     if r_proc.returncode != 0:
-      raise AirflowException("Rscript {} failed with return code {}".format(self.script, r_proc.returncode))
+      raise AirflowException("Rscript {} failed with return code {}".format(
+          self.script, r_proc.returncode))
 
     return escape_string(r_stdoutdata)
